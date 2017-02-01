@@ -2,39 +2,53 @@ package com.codepath.simpletodo;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ListView;
+
+import com.codepath.simpletodo.Adapter.TaskAdapter;
+import com.codepath.simpletodo.Fragment.EditItemFragment;
+import com.codepath.simpletodo.Model.Task;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
-    ArrayList<String> items;
-    ArrayAdapter<String> itemsAdapter;
+public class MainActivity extends AppCompatActivity implements EditItemFragment.OnFragmentInteractionListener {
+    ArrayList<Task> items;
+    TaskAdapter itemsAdapter;
     ListView lvItems;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+
         readItems();
         lvItems = (ListView) findViewById(R.id.lvItems);
-//        items = new ArrayList<>();
-        itemsAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_expandable_list_item_1, items);
+        // Construct the data source
+        items = new ArrayList<Task>();
+        // Create the adapter to convert the array to views
+        itemsAdapter = new TaskAdapter(this, items);
+        // Attach the adapter to a ListView
         lvItems.setAdapter(itemsAdapter);
-//        items.add("First Item");
-//        items.add("Second Item");
         setupListViewListener();
+
+
     }
-    private void setupListViewListener(){
+
+    private void setupListViewListener() {
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View view, int pos, long id) {
@@ -47,51 +61,84 @@ public class MainActivity extends AppCompatActivity {
         lvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int pos, long id) {
-                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
-                i.putExtra("item", items.get(pos));
-                i.putExtra("position", pos);
-                startActivityForResult(i, 0);
+                showEditDialog(items.get(pos), pos);
             }
         });
 
     }
-    private void readItems(){
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir,"todo.txt");
-        try {
-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
-        }catch (IOException e) {
-            items = new ArrayList<>();
-        }
+
+    private void readItems() {
+//        File filesDir = getFilesDir();
+//        File todoFile = new File(filesDir, "todo.txt");
+//        try {
+//            ArrayList<String> list = FileUtils.readLines(todoFile);
+//            items = new ArrayList<Task>();
+//        } catch (IOException e) {
+//            items = new ArrayList<>();
+//        }
     }
-    private void writeItems(){
+
+    private void writeItems() {
         File filesDir = getFilesDir();
-        File todoFile = new File(filesDir,"todo.txt");
+        File todoFile = new File(filesDir, "todo.txt");
         try {
-            FileUtils.writeLines(todoFile,items);
-        }catch (IOException e) {
+            FileUtils.writeLines(todoFile, items);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public void onAddItem(View v){
-        EditText etNewItem = (EditText) findViewById(R.id.etNewItem);
-        String itemText = etNewItem.getText().toString();
-        itemsAdapter.add(itemText);
-        etNewItem.setText("");
-        writeItems();
-    }
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // REQUEST_CODE is defined above
         if (resultCode == RESULT_OK && requestCode == 0) {
-            // Extract name value from result extras
-            String item = data.getExtras().getString("item");
-            int pos = data.getExtras().getInt("position");
-            items.remove(pos);
-            items.add(pos,item);
+            String name = data.getExtras().getString("name");
+            String deadline = data.getExtras().getString("deadline");
+            String description = data.getExtras().getString("description");
+            String priority = data.getExtras().getString("priority");
+            Task newTask = new Task(name, new Date(deadline), description, "", priority, 0);
+            items.add(newTask);
             itemsAdapter.notifyDataSetChanged();
             writeItems();
         }
     }
+
+    private void showEditDialog(Task item, int pos) {
+        FragmentManager fm = getSupportFragmentManager();
+        EditItemFragment editNameDialogFragment = EditItemFragment.newInstance(item,pos);
+        editNameDialogFragment.show(fm, "fragment_edit_item");
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.app_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_add_new_task:
+                Intent i = new Intent(MainActivity.this, AddNewItemActivity.class);
+                startActivityForResult(i, 0);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Task item, int pos) {
+        items.remove(pos);
+        items.add(pos,item);
+        itemsAdapter.notifyDataSetChanged();
+    }
+
+
 
 }
