@@ -14,13 +14,14 @@ import com.codepath.simpletodo.R;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Asus on 1/31/2017.
  */
 
 public class TaskAdapter extends ArrayAdapter<Task> {
-    public TaskAdapter(Context context, ArrayList<Task> users) {
+    public TaskAdapter(Context context, List<Task> users) {
         super(context, 0, users);
     }
 

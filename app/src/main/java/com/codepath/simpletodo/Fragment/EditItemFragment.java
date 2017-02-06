@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import com.android.datetimepicker.date.DatePickerDialog;
 import com.android.datetimepicker.time.RadialPickerLayout;
 import com.android.datetimepicker.time.TimePickerDialog;
+import com.codepath.simpletodo.Helper.TaskDBHelper;
 import com.codepath.simpletodo.Model.Task;
 import com.codepath.simpletodo.R;
 import com.weiwangcn.betterspinner.library.BetterSpinner;
@@ -40,6 +41,7 @@ public class EditItemFragment extends DialogFragment implements DatePickerDialog
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TASK_NAME = "name";
+    private static final String TASK_ID = "id";
     private static final String POSITION = "position";
     private static final String TASK_DEADLINE = "deadline";
     private static final String TASK_DESCRIPTION = "description";
@@ -47,6 +49,7 @@ public class EditItemFragment extends DialogFragment implements DatePickerDialog
 
     // TODO: Rename and change types of parameters
     private String mTaskName;
+    private int mTaskId;
     private String mTaskDeadline;
     private String mTaskPriority;
     private String mTaskDescription;
@@ -81,6 +84,7 @@ public class EditItemFragment extends DialogFragment implements DatePickerDialog
         EditItemFragment fragment = new EditItemFragment();
         Bundle args = new Bundle();
         args.putString(TASK_NAME, param1.name);
+        args.putInt(TASK_ID, param1.id);
         args.putString(TASK_DEADLINE, param1.deadline.toString());
         args.putString(TASK_DESCRIPTION, param1.description);
         args.putString(TASK_PRIORITY, param1.priority);
@@ -94,6 +98,7 @@ public class EditItemFragment extends DialogFragment implements DatePickerDialog
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mTaskName = getArguments().getString(TASK_NAME);
+            mTaskId = getArguments().getInt(TASK_ID);
             mTaskDeadline = getArguments().getString(TASK_DEADLINE);
             mTaskDescription = getArguments().getString(TASK_DESCRIPTION);
             mTaskPriority = getArguments().getString(TASK_PRIORITY);
@@ -202,7 +207,9 @@ public class EditItemFragment extends DialogFragment implements DatePickerDialog
 
     public void onSave(){
         if (mListener != null) {
-            Task mTask = new Task(etItem.getText().toString(),new Date(etDeadline.getText().toString()),etDescription.getText().toString(),"",snPriority.getText().toString(),0);
+            Task mTask = new Task(etItem.getText().toString(),new Date(etDeadline.getText().toString()),etDescription.getText().toString(),snPriority.getText().toString(),0);
+            mTask.setId(mTaskId);
+            TaskDBHelper.updateEntityToDB(mTask,getContext());
             mListener.onFragmentInteraction(mTask,mPosition);
             dismiss();
         }

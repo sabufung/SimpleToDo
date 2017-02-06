@@ -7,20 +7,27 @@ import java.util.Date;
  */
 
 public class Task {
+    public int id;
     public String name;
     public Date deadline;
     public String description;
-    public String imageUrl;
     public String priority;
     public int status;
 
-    public Task(String name, Date deadline, String description, String imageUrl, String priority, int status) {
+    public Task(String name, Date deadline, String description, String priority, int status) {
         this.name = name;
         this.deadline = deadline;
         this.description = description;
-        this.imageUrl = imageUrl;
         this.priority = priority;
         this.status = status;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -45,14 +52,6 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
     }
 
     public String getPriority() {

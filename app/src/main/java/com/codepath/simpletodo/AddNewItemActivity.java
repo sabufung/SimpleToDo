@@ -15,11 +15,15 @@ import android.widget.ImageButton;
 import com.android.datetimepicker.date.DatePickerDialog;
 import com.android.datetimepicker.time.RadialPickerLayout;
 import com.android.datetimepicker.time.TimePickerDialog;
+import com.codepath.simpletodo.Enum.StatusEnum;
+import com.codepath.simpletodo.Helper.TaskDBHelper;
+import com.codepath.simpletodo.Model.Task;
 import com.weiwangcn.betterspinner.library.BetterSpinner;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class AddNewItemActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener, TimePickerDialog.OnTimeSetListener {
@@ -111,12 +115,13 @@ public class AddNewItemActivity extends AppCompatActivity implements DatePickerD
         String itemDeadline = etDeadline.getText().toString();
         String itemDescription = etDescription.getText().toString();
         String itemPriority = snPriority.getText().toString();
-//        Task newTask = new Task(itemName,new Date(),itemDescription,"",Integer.parseInt(itemStatus),Integer.parseInt(itemPriority));
+        Task newTask = new Task(itemName,new Date(itemDeadline),itemDescription,itemPriority, StatusEnum.ONGOING.getValue());
         data.putExtra("name", itemName);
         data.putExtra("deadline", itemDeadline);
         data.putExtra("description", itemDescription);
         data.putExtra("priority", itemPriority);
         // Activity finished ok, return the data
+        TaskDBHelper.saveEntityToDB(newTask,getBaseContext());
         setResult(RESULT_OK, data); // set result code and bundle data for response
 //         closes the activity and returns to first screen
         this.finish();

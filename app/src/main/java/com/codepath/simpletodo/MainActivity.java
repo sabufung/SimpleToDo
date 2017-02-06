@@ -13,6 +13,7 @@ import android.widget.ListView;
 
 import com.codepath.simpletodo.Adapter.TaskAdapter;
 import com.codepath.simpletodo.Fragment.EditItemFragment;
+import com.codepath.simpletodo.Helper.TaskDBHelper;
 import com.codepath.simpletodo.Model.Task;
 
 import org.apache.commons.io.FileUtils;
@@ -21,9 +22,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements EditItemFragment.OnFragmentInteractionListener {
-    ArrayList<Task> items;
+    List<Task> items;
     TaskAdapter itemsAdapter;
     ListView lvItems;
 
@@ -35,17 +37,16 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
 
-        readItems();
         lvItems = (ListView) findViewById(R.id.lvItems);
         // Construct the data source
-        items = new ArrayList<Task>();
+        items = TaskDBHelper.readAll(getBaseContext());
+
         // Create the adapter to convert the array to views
         itemsAdapter = new TaskAdapter(this, items);
+
         // Attach the adapter to a ListView
         lvItems.setAdapter(itemsAdapter);
         setupListViewListener();
-
-
     }
 
     private void setupListViewListener() {
@@ -54,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
             public boolean onItemLongClick(AdapterView<?> adapter, View view, int pos, long id) {
                 items.remove(pos);
                 itemsAdapter.notifyDataSetChanged();
-                writeItems();
                 return true;
             }
         });
@@ -67,28 +67,6 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
 
     }
 
-    private void readItems() {
-//        File filesDir = getFilesDir();
-//        File todoFile = new File(filesDir, "todo.txt");
-//        try {
-//            ArrayList<String> list = FileUtils.readLines(todoFile);
-//            items = new ArrayList<Task>();
-//        } catch (IOException e) {
-//            items = new ArrayList<>();
-//        }
-    }
-
-    private void writeItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try {
-            FileUtils.writeLines(todoFile, items);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == 0) {
@@ -96,19 +74,17 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
             String deadline = data.getExtras().getString("deadline");
             String description = data.getExtras().getString("description");
             String priority = data.getExtras().getString("priority");
-            Task newTask = new Task(name, new Date(deadline), description, "", priority, 0);
+            Task newTask = new Task(name, new Date(deadline), description, priority, 0);
             items.add(newTask);
             itemsAdapter.notifyDataSetChanged();
-            writeItems();
         }
     }
 
     private void showEditDialog(Task item, int pos) {
         FragmentManager fm = getSupportFragmentManager();
-        EditItemFragment editNameDialogFragment = EditItemFragment.newInstance(item,pos);
+        EditItemFragment editNameDialogFragment = EditItemFragment.newInstance(item, pos);
         editNameDialogFragment.show(fm, "fragment_edit_item");
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -135,10 +111,8 @@ public class MainActivity extends AppCompatActivity implements EditItemFragment.
     @Override
     public void onFragmentInteraction(Task item, int pos) {
         items.remove(pos);
-        items.add(pos,item);
+        items.add(pos, item);
         itemsAdapter.notifyDataSetChanged();
     }
-
-
 
 }
